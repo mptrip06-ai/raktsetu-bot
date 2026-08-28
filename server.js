@@ -23,6 +23,7 @@ app.get('/webhook', (req, res) => {
 
 app.post('/webhook', async (req, res) => {
     res.sendStatus(200); 
+    console.log("📥 Webhook received from Meta!"); // Added log
 
     const body = req.body;
     if (body.object && body.entry?.[0]?.changes?.[0]?.value?.messages?.[0]) {
@@ -30,7 +31,10 @@ app.post('/webhook', async (req, res) => {
         const senderPhone = message.from;
         const msgText = message.text ? message.text.body.toLowerCase() : '';
 
+        console.log(`💬 New message from ${senderPhone}: ${msgText}`); // Added log
+
         if (msgText === 'hi' || msgText === 'hello') {
+            console.log("🤖 Attempting to send reply..."); // Added log
             await sendReply(senderPhone, translations.EN.welcome);
         }
     }
@@ -43,7 +47,11 @@ async function sendReply(to, text) {
             { messaging_product: "whatsapp", to: to, text: { body: text } },
             { headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` } }
         );
-    } catch (error) {}
+        console.log("✅ Reply successfully sent!"); // Added log
+    } catch (error) {
+        // This will finally show us if the token or ID is wrong!
+        console.error("❌ Error sending message:", error.response ? error.response.data : error.message); 
+    }
 }
 
 const PORT = process.env.PORT || 3000;
